@@ -367,6 +367,17 @@ class Api:
             media_key = decoded_message["1"]["3"]["1"]
         except KeyError as e:
             raise UploadRejected("File upload rejected by api") from e
+
+        # Handle case where media_key is a dict instead of a string
+        # This can happen with certain API responses
+        if isinstance(media_key, dict):
+            # Try alternative extraction path: field "1" at decoded_message["1"]["1"]
+            media_key = decoded_message.get("1", {}).get("1", None)
+
+        # Ensure we only return a string, never a dict
+        if isinstance(media_key, dict) or media_key is None:
+            raise UploadRejected("Could not extract valid media key from API response")
+
         return media_key
 
     def move_remote_media_to_trash(self, dedup_keys: Sequence[str]) -> dict:

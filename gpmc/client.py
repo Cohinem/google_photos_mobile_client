@@ -123,6 +123,9 @@ class Client:
             if not force_upload:
                 progress.update(task_id=file_progress_id, description=f"Checking: {file_path.name}")
                 if remote_media_key := self.api.find_remote_media_by_hash(hash_bytes):
+                    # Ensure media key is a string, not a dict
+                    if not isinstance(remote_media_key, str):
+                        raise ValueError(f"Invalid media key type: expected str, got {type(remote_media_key)}")
                     return {file_path.absolute().as_posix(): remote_media_key}
 
             upload_token = self.api.get_upload_token(hash_b64, file_size)
@@ -147,6 +150,9 @@ class Client:
                 model=model,
                 quality=quality,
             )
+            # Ensure media key is a string, not a dict
+            if not isinstance(media_key, str):
+                raise ValueError(f"Invalid media key type: expected str, got {type(media_key)}")
             return {file_path.absolute().as_posix(): media_key}
         finally:
             progress.update(file_progress_id, visible=False)
