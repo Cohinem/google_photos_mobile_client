@@ -190,6 +190,18 @@ class Api:
 
         decoded_message, _ = decode_message(response.content)
         media_key = decoded_message["1"].get("2", {}).get("2", {}).get("1", None)
+
+        # Handle case where media_key is a dict instead of a string
+        # This can happen with certain API responses (e.g., when dealing with special characters in album names)
+        if isinstance(media_key, dict):
+            # Try alternative extraction path: field "1" at one level up
+            media_key = decoded_message["1"].get("2", {}).get("1", None)
+
+        # Ensure we only return a string or None, never a dict
+        if isinstance(media_key, dict):
+            # If still a dict, we couldn't find the correct key - return None
+            return None
+
         return media_key
 
     def upload_file(self, file: str | Path | bytes | IO[bytes] | Generator[bytes, None, None], upload_token: str) -> dict:
